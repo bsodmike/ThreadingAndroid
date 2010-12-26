@@ -12,9 +12,15 @@
 		  	 android:padding="5dp"
 			 android:text="@string/title" />
 
-    
 	
-	<ProgressBar android:layout_height="wrap_content" android:layout_width="fill_parent" android:id="@+id/progressBar"></ProgressBar><TextView android:layout_height="wrap_content" android:layout_gravity="center" android:textColor="@color/textColor" android:layout_width="wrap_content" android:padding="10dp" android:textSize="20dp" android:id="@+id/textOutput"></TextView><LinearLayout android:layout_height="wrap_content"
+	<ProgressBar android:layout_width="fill_parent"
+	             android:layout_height="wrap_content"
+	             android:indeterminate="false"
+                 style="?android:attr/progressBarStyleHorizontal"
+                 android:padding="10dip"
+                 android:id="@+id/progressBar"></ProgressBar>
+	
+	<TextView android:layout_height="wrap_content" android:layout_gravity="center" android:textColor="@color/textColor" android:layout_width="wrap_content" android:padding="10dp" android:textSize="20dp" android:id="@+id/textOutput"></TextView><LinearLayout android:layout_height="wrap_content"
 				  android:id="@+id/LinearLayout02"
 			      android:layout_marginTop="10dp"
 				  android:layout_width="fill_parent"
