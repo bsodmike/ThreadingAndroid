@@ -1,5 +1,5 @@
 /* Author: 	Michael de Silva
- * Date:	26nd December 2010
+ * Date:	26th December 2010
  * Email:	michael@mwdesilva.com
  * Blog:	bsodmike.com
  *
@@ -19,6 +19,8 @@
  * http://www.aviyehuda.com/2010/12/android-multithreading-in-a-ui-environment/
  * as I feel it tends to a bit more intuitive code.
  * 
+ * Implementing the looper for the child thread.
+ * 
  */
 
 package com.threading;
@@ -27,6 +29,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
@@ -39,6 +42,7 @@ public class ThreadingActivity extends Activity implements OnClickListener {
 	private int mResults;
 	private TextView textOutput;
 	private Button buttonPush;
+	private Handler innerHandler;
 	
 	final Handler mHandler = new Handler(){
 		public void handleMessage(Message msg) {
@@ -78,8 +82,16 @@ public class ThreadingActivity extends Activity implements OnClickListener {
 	    // Fire off a thread to do some work that we shouldn't do directly in the UI thread
 	    Thread t = new Thread() {
 	        public void run() {
+	        	
+	        	Looper.prepare();
+	        		
+	        	innerHandler = new Handler();
+                Message message = innerHandler.obtainMessage();
+                innerHandler.dispatchMessage(message);
+                Log.d(innerHandler.getLooper().getThread().getName(), "bound to "+ innerHandler.getLooper().getThread().getName());
+                
 	        	try {
-		        	Log.d(this.getName(),"bound to "+mHandler.getLooper().getThread().getName());
+		        	Log.d(this.getName(), "bound to "+mHandler.getLooper().getThread().getName());
 		            mResults = doSomethingExpensive();
 		            
 		            // Create runnable for posting
@@ -92,12 +104,19 @@ public class ThreadingActivity extends Activity implements OnClickListener {
 						}
 					});
 		            
+		            /*
+		             * quit each 'spawned' thread on completion.
+		             */
+		            innerHandler.getLooper().quit();
 		            backgroundTask.dismiss();
+		            
 	        	}catch (Exception e){
 	        		//TODO
 	        	}
 	        	Log.d(this.getName(),"sending message to "+mHandler.getLooper().getThread().getName());
 	        	mHandler.sendEmptyMessage(0);
+	        	
+                Looper.loop();
 	        }
 	    };
 	    t.start();
@@ -118,6 +137,13 @@ public class ThreadingActivity extends Activity implements OnClickListener {
 		}
     	return(RESULT_OK);
     }
-		
+
+    //prevent looper from looping ad infinitum
+    @Override
+	protected void onDestroy() {
+		innerHandler.getLooper().quit();
+		super.onDestroy();
+	} 
+    
 }
  
