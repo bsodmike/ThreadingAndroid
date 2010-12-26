@@ -5,6 +5,20 @@
  *
  * Example on threading as per Android documentation,
  * http://developer.android.com/resources/faq/commontasks.html#threading  
+ * 
+ * I've gotten rid of the following block of code found in the d.android guide,
+ * 
+ *  // Create runnable for posting
+ *   final Runnable mUpdateResults = new Runnable() {
+ *       public void run() {
+ *           updateResultsInUi();
+ *       }
+ *   };
+ * 
+ * as per 
+ * http://www.aviyehuda.com/2010/12/android-multithreading-in-a-ui-environment/
+ * as I feel it tends to a bit more intuitive code.
+ * 
  */
 
 package com.threading;
@@ -25,15 +39,16 @@ public class ThreadingActivity extends Activity implements OnClickListener {
 	private int mResults;
 	private TextView textOutput;
 	private Button buttonPush;
-	final Handler mHandler = new Handler();
 	
-    // Create runnable for posting
-    final Runnable mUpdateResults = new Runnable() {
-        public void run() {
-            updateResultsInUi(mResults);
-        }
-    };
-    
+	final Handler mHandler = new Handler(){
+		public void handleMessage(Message msg) {
+			if (msg.what==0){
+				Log.d(this.getLooper().getThread().getName(), "mHandler");
+				Toast.makeText(getApplicationContext(), "Whooo: " + msg.what, Toast.LENGTH_LONG).show();
+			}
+		}		
+	};
+
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -66,27 +81,27 @@ public class ThreadingActivity extends Activity implements OnClickListener {
 	        	try {
 		        	Log.d(this.getName(),"bound to "+mHandler.getLooper().getThread().getName());
 		            mResults = doSomethingExpensive();
-		            mHandler.post(mUpdateResults);
-		              //ENDING YOUR PROGRESSDIALOG UPON COMPLETION
+		            
+		            // Create runnable for posting
+		            mHandler.post(new Runnable() {
+						
+						@Override
+						public void run() {
+							// TODO Auto-generated method stub
+							updateResultsInUi(mResults);
+						}
+					});
+		            
 		            backgroundTask.dismiss();
 	        	}catch (Exception e){
 	        		//TODO
 	        	}
-	        	Log.d(this.getName(),"sending message to "+threadHandler.getLooper().getThread().getName());
-	        	threadHandler.sendEmptyMessage(0);
+	        	Log.d(this.getName(),"sending message to "+mHandler.getLooper().getThread().getName());
+	        	mHandler.sendEmptyMessage(0);
 	        }
 	    };
 	    t.start();
-	}
-    
-	private Handler threadHandler = new Handler() {
-		public void handleMessage(Message msg) {
-			if (msg.what==0){
-				Log.d(this.getLooper().getThread().getName(), "threadHandler");
-				Toast.makeText(getApplicationContext(), "Whooo: " + msg.what, Toast.LENGTH_LONG).show();
-			}
-		}
-	};    
+	}  
     
     private void updateResultsInUi(int mResults) {
         // Back in the UI thread -- update our UI elements based on the data in mResults
