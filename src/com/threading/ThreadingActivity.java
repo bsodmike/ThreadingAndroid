@@ -36,6 +36,16 @@ public class ThreadingActivity extends Activity implements OnClickListener {
 	
 	final Handler mHandler = new Handler();
 
+	/*
+	 * Create this only once!
+	 */
+	// Create runnable for posting
+	final Runnable mUpdateResults = new Runnable() {
+		public void run() {
+			updateResultsInUi(mResults);
+		}
+	};
+	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -86,15 +96,24 @@ public class ThreadingActivity extends Activity implements OnClickListener {
 				    try {				    
 				    	mResults = doSomethingExpensive();
 				    	
+				    	/*
+				    	 * This method creates a new object
+				    	 * each time a runnable is posted;
+				    	 * hence it has been commented...
+				    	 */
 				        // Create runnable for posting
-				        mHandler.post(new Runnable() {
-							
-							@Override
-							public void run() {
-								// TODO Auto-generated method stub
-								updateResultsInUi(mResults);
-							}
-						});				        
+//				        mHandler.post(new Runnable() {
+//							
+//							@Override
+//							public void run() {
+//								// TODO Auto-generated method stub
+//								updateResultsInUi(mResults);
+//							}
+//						});		
+				    	
+				    	//...in favour of this.
+				    	mHandler.post(mUpdateResults);
+				    	
 					}catch (Exception e){
 						//TODO
 						e.printStackTrace();
