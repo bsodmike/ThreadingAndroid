@@ -40,6 +40,14 @@ public class ThreadingActivity extends Activity implements OnClickListener {
 	private TextView textOutput;
 	private Button buttonPush;
 	
+    // Create runnable for posting
+    final Runnable mUpdateResults = new Runnable() {
+		public void run() {
+			// TODO Auto-generated method stub
+			updateResultsInUi(mResults);
+		}
+	};	
+	
 	final Handler mHandler = new Handler(){
 		public void handleMessage(Message msg) {
 			if (msg.what==0){
@@ -82,15 +90,8 @@ public class ThreadingActivity extends Activity implements OnClickListener {
 		        	Log.d(this.getName(),"bound to "+mHandler.getLooper().getThread().getName());
 		            mResults = doSomethingExpensive();
 		            
-		            // Create runnable for posting
-		            mHandler.post(new Runnable() {
-						
-						@Override
-						public void run() {
-							// TODO Auto-generated method stub
-							updateResultsInUi(mResults);
-						}
-					});
+					//post runnable to message queue
+					mHandler.post(mUpdateResults);
 		            
 		            backgroundTask.dismiss();
 	        	}catch (Exception e){
