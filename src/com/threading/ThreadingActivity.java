@@ -6,21 +6,9 @@
  * Example on threading as per Android documentation,
  * http://developer.android.com/resources/faq/commontasks.html#threading  
  * 
- * I've gotten rid of the following block of code found in the d.android guide,
+ * ref: http://www.aviyehuda.com/2010/12/android-multithreading-in-a-ui-environment/
  * 
- *  // Create runnable for posting
- *   final Runnable mUpdateResults = new Runnable() {
- *       public void run() {
- *           updateResultsInUi();
- *       }
- *   };
- * 
- * as per 
- * http://www.aviyehuda.com/2010/12/android-multithreading-in-a-ui-environment/
- * as I feel it tends to a bit more intuitive code.
- * 
- * Implementing the looper for the child thread.
- * 
+ * Implemented  looper in child thread. 
  */
 
 package com.threading;
@@ -43,6 +31,13 @@ public class ThreadingActivity extends Activity implements OnClickListener {
 	private TextView textOutput;
 	private Button buttonPush;
 	private Handler innerHandler;
+	
+	// Create runnable for posting
+	final Runnable mUpdateResults = new Runnable() {
+		public void run() {
+			updateResultsInUi(mResults);
+		}
+	};	
 	
 	final Handler mHandler = new Handler(){
 		public void handleMessage(Message msg) {
@@ -92,17 +87,11 @@ public class ThreadingActivity extends Activity implements OnClickListener {
                 
 	        	try {
 		        	Log.d(this.getName(), "bound to "+mHandler.getLooper().getThread().getName());
-		            mResults = doSomethingExpensive();
 		            
-		            // Create runnable for posting
-		            mHandler.post(new Runnable() {
-						
-						@Override
-						public void run() {
-							// TODO Auto-generated method stub
-							updateResultsInUi(mResults);
-						}
-					});
+		        	mResults = doSomethingExpensive();
+		        	
+		        	//post runnable to message queue
+		            mHandler.post(mUpdateResults);
 		            
 		            /*
 		             * quit each 'spawned' thread on completion.
@@ -122,7 +111,7 @@ public class ThreadingActivity extends Activity implements OnClickListener {
 	    t.start();
 	}  
     
-    private void updateResultsInUi(int mResults) {
+    public void updateResultsInUi(int mResults) {
         // Back in the UI thread -- update our UI elements based on the data in mResults
     	textOutput.setText("Received: " + mResults);
     }    
